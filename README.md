@@ -9,7 +9,7 @@ An advanced discord bot made for university applicant servers that allows users 
 - [Sqlite](https://www.sqlite.org/index.html)
 
 ### Installation
-1. Install [Python](https://www.python.org/downloads/)
+1. Install [Python](https://www.python.org/downloads/).
 2. Clone the repository:
 ```sh
 git clone https://github.com/joshuajz/BorgV2
@@ -19,11 +19,11 @@ git clone https://github.com/joshuajz/BorgV2
 ```sh
 pip install -r requirements.txt
 ```
-5. Create a test discord server (ie. press the + in discord)
+5. Create a test discord server (ie. press the + in discord).
 ![image](https://user-images.githubusercontent.com/35657686/112092497-fc912980-8b6d-11eb-994a-be0667b62bc5.png)
 6. Create a [discord application](https://discord.com/developers/applications).
 7. Create a bot for the discord application by clicking on the "Bot" tab.
-8. Scroll slightly down on the "Bot" tab and select the **Presenece Intent** and **Server Members Intent**.
+8. Scroll slightly down on the "Bot" tab and select the **PRESENCE Intent** and **SERVER MEMBERS Intent**.
 ![image](https://user-images.githubusercontent.com/35657686/112092380-be940580-8b6d-11eb-9dd7-6f91aa9fdc20.png)
 9. Click on OAuth2.
 10. Select _bot_ under the Scopes.
