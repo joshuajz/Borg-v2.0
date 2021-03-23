@@ -1,5 +1,5 @@
 # BorgV2
-## About The Project
+### About The Project
 
 An advanced discord bot made for university applicant servers that allows users to display their programs.  Also allows administrators to add useful commands and welcome messages.  It's a rewrite of my old bot (Borg).
 
