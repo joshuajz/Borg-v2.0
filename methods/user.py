@@ -3,7 +3,7 @@ import discord
 
 def find_user(data):
     data = data.strip()
-    if data.isnumeric():
+    if data.isnumeric() and len(data) == 18:
         # User ID is given
         user_id = int(data)
     elif data[0:3] == "<@!":

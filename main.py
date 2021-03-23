@@ -38,6 +38,7 @@ command_list = {
     "warn": warn,
     "userinfo": userinfo,
     "programs_edit": programs_edit,
+    "stress": stress,
 }
 
 # Bot Instance

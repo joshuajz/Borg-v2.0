@@ -9,29 +9,33 @@ from methods.user import find_user
 
 
 async def programs_add(ctx, client):
-    content_temp = ctx.content.split(" ")
+
     if len(ctx.content.split(" ")) <= 1 and len(ctx.content.split("\n")) <= 1:
         embed = create_embed(
             "Programs_add",
-            "!programs_add {user (optional, admin only)} Program #1, Program #2, Program #3...",
+            "!programs_add {user: admin only} Program #1, Program #2, Program #3 ...",
             "orange",
         )
-
         add_field(
             embed,
-            "user",
+            "Optional Argument: user",
             "Admin Only: You can supply a user and their programs for them.",
             True,
         )
-
         add_field(
             embed,
-            "Programs",
-            "You'll provide a list of programs.  Seperate each program with a comma.",
+            "Program #1, Program #2, etc.",
+            "Provide a list of programs to be added.  You can use *commas* or *new lines* to denote.",
             True,
         )
-
-        add_field(embed, "Example", "!programs_add UW - CS, UW - SE", True)
+        add_field(embed, "Example", "!programs_add UW - CS, UW - SE, UW - CE", True)
+        add_field(
+            embed,
+            "Note",
+            "!programs_add is **additive** meaning you don't have to remove all of your programs to add new ones.",
+            True,
+        )
+        add_field(embed, "Example 2", "!programs_add\nUW - CS\nUW - SE", True)
 
         await ctx.channel.send(embed=embed)
         return
@@ -105,7 +109,8 @@ async def programs_add(ctx, client):
     add_field(embed, "Program Additions", plist, True)
     add_field(embed, "Final Programs", clist + plist, True)
 
-    verification_msg = await client.get_channel(programs_channel).send(embed=embed)
+    verify_channel = client.get_channel(programs_channel)
+    verification_msg = await verify_channel.send(embed=embed)
 
     emojis = ["✅", "❌"]
     for emoji in emojis:
@@ -116,8 +121,9 @@ async def programs_add(ctx, client):
         "Your !programs additions have been sent to the administrators for review.  Please sit tight!",
         "light_green",
     )
+
     add_field(embed, "User", client.get_user(int(user_id)).mention, True)
-    add_field(embed, "Added Programs", plist, True)
+    add_field(embed, "Added Programs", f"```{plist}```", True)
     await ctx.channel.send(embed=embed)
 
 
@@ -126,14 +132,31 @@ async def programs_remove(ctx, client):
 
     db = await database_connection(ctx.guild.id)
     if len(content) <= 1:
-        embed = create_embed("Programs_remove", "!programs_remove", "red")
+        embed = create_embed(
+            "Programs_remove", "!programs_remove {user: admin only} {program}", "orange"
+        )
+        add_field(
+            embed,
+            "Optional Argument: user",
+            "Admin Only: You can supply a user and their programs for them.",
+            True,
+        )
+        add_field(
+            embed,
+            "Program",
+            "Provide the program you would like to remove (use the number), or use * to remove all programs.",
+            True,
+        )
+        add_field(embed, "Example", "!programs_remove 1, 2", True)
+        add_field(embed, "Example 2", "!programs_remove all", True)
         await ctx.channel.send(embed=embed)
 
     content = ctx.content[16::]
     # Finding the user_id to use
-    user_id = find_user(content.split(" ")[0])
+    user_id = find_user(content.strip().split(" ")[0])
+
     if user_id:
-        content = "".join(content.split(" ")[1::])
+        content = "".join(content.strip().split(" ")[1::])
         if ctx.author.guild_permissions.administrator != True:
             user_id = ctx.author.id
     else:
@@ -145,7 +168,7 @@ async def programs_remove(ctx, client):
         db["db"].execute("DELETE FROM programs WHERE user_id = (?)", (user_id,))
         db["con"].commit()
 
-        embed = create_embed("All Programs Removed Successfully", "", "dark_blue")
+        embed = create_embed("Removed **all** programs successfully.", "", "dark_blue")
         await ctx.channel.send(embed=embed)
 
         return
@@ -161,12 +184,12 @@ async def programs_remove(ctx, client):
         for i in content.split(","):
             remove_list.append(int(i.strip()))
     else:
-        print(content.strip())
         remove_list = content.strip()
 
     # Remove duplicates
     remove_list = list(dict.fromkeys(remove_list))
     remove_list = [int(i) for i in remove_list]
+
     programs_raw = (
         db["db"]
         .execute("SELECT description FROM programs WHERE user_id = (?)", (user_id,))
@@ -192,15 +215,19 @@ async def programs_remove(ctx, client):
         description_display += f"{number}. {val.strip()}\n"
         description += val.strip() + "\n"
         i += 1
-
-    db["db"].execute(
-        "UPDATE programs SET description = (?) WHERE user_id = (?)",
-        (description, user_id),
-    )
+    if not description:
+        db["db"].execute("DELETE FROM programs WHERE user_id = (?)", (user_id,))
+        embed = create_embed("Removed **all** programs successfully.", "", "dark_blue")
+        await ctx.channel.send(embed=embed)
+    else:
+        db["db"].execute(
+            "UPDATE programs SET description = (?) WHERE user_id = (?)",
+            (description, user_id),
+        )
+        embed = create_embed("Updated Programs List", "", "dark_blue")
+        add_field(embed, "Programs", f"```{description_display}```", True)
+        await ctx.channel.send(embed=embed)
     db["con"].commit()
-
-    embed = create_embed("New Programs List", description_display, "dark_blue")
-    await ctx.channel.send(embed=embed)
 
 
 async def programs(ctx, client):
@@ -213,6 +240,7 @@ async def programs(ctx, client):
         add_field(
             embed, "user", "The user's programs you'd like to see. (ie. @JZ)", True
         )
+        add_field(embed, "Example", "!programs <@749359897405161522>")
         await ctx.channel.send(embed=embed)
         return
 
@@ -226,8 +254,8 @@ async def programs(ctx, client):
 
     if user_data is None:
         embed = create_embed(
-            "Error",
-            "That user hasn't created a !programs.  Create one with !programs_add",
+            "No Programs.",
+            "That user hasn't created a !programs.  Create one with !programs_add.",
             "red",
         )
         await ctx.channel.send(embed=embed)
@@ -235,14 +263,13 @@ async def programs(ctx, client):
 
     programs = user_data[1].split("\n")
 
-    message = "```\n"
+    message = "```"
     space_amount = (len(programs) // 10) + 1
     for program in range(len(programs)):
         if programs[program] != "":
             number = f"{program + 1}".rjust(space_amount, " ")
             message += f"{number}. {programs[program]}\n"
     message += "```"
-
     embed = create_embed(f"Programs", "", "orange")
     add_field(embed, "User", f"{client.get_user(int(user_id)).mention}", False)
     add_field(embed, "Programs", message, True)
@@ -255,7 +282,19 @@ async def programs_edit(ctx, client):
 
     db = await database_connection(ctx.guild.id)
     if len(content) < 3:
-        embed = create_embed("Programs_edit", "!programs_edit", "red")
+        embed = create_embed(
+            "Programs_edit", "!programs_edit {program to edit} {new text}", "orange"
+        )
+        add_field(
+            embed,
+            "Program to edit",
+            "The number of the program you would like to edit.",
+            True,
+        )
+        add_field(
+            embed, "New text", "The text that you would like that program to say.", True
+        )
+        add_field(embed, "Example", "!programs_edit 1 New Text Here", True)
         await ctx.channel.send(embed=embed)
         return
 
@@ -284,7 +323,7 @@ async def programs_edit(ctx, client):
     else:
         user_id = ctx.author.id
         program_to_edit = content[1]
-        new_content = "".join(content[2::])
+        new_content = " ".join(content[2::])
 
     current_programs = (
         db["db"]
@@ -327,6 +366,7 @@ async def programs_edit(ctx, client):
     embed = create_embed("Programs Edit Verification Required", "", "magenta")
     add_field(embed, "User", user.mention, False)
     add_field(embed, "New Text", new_content, True)
+    add_field(embed, "Program to Change", program_to_edit, True)
     add_field(embed, "Programs", programs_print, True)
 
     channel = client.get_channel(programs_channel)
@@ -482,6 +522,61 @@ async def program_reaction_handling(ctx, client):
 
             return True
     elif m.embeds[0].title == "Programs Edit Verification Required":
-        print("temp need to dev")
-        #! dev
+        if ctx.emoji.name == "❌":
+            await m.delete()
+            return True
+        elif ctx.emoji.name == "✅":
+            user_id = find_user(m_embeds.fields[0].value)
+            if not user_id:
+                await m.delete()
+                return False
+
+            programs_newmsg = m_embeds.fields[1].value
+            program_change = m_embeds.fields[2].value
+            await m.delete()
+            if not programs_newmsg or not program_change:
+                return False
+
+            current_programs = (
+                db["db"]
+                .execute(
+                    "SELECT description FROM programs WHERE user_id = (?)",
+                    (user_id,),
+                )
+                .fetchone()
+            )[0]
+            #! HERE
+            programs = {}
+            i = 1
+            for p in current_programs.split("\n"):
+                programs[i] = p
+                i += 1
+
+            programs[int(program_change)] = programs_newmsg
+
+            final_programs = ""
+            for key, value in programs.items():
+                final_programs += value + "\n"
+
+            db["db"].execute(
+                "UPDATE programs SET description = ? WHERE user_id = ?",
+                (final_programs, user_id),
+            )
+            db["con"].commit()
+
+            user = client.get_user(user_id)
+            dm_channel = user.dm_channel
+            if dm_channel is None:
+                await user.create_dm()
+                dm_channel = user.dm_channel
+
+            embed = create_embed("!Programs Edit Was Successful", "", "light_green")
+            add_field(embed, "Programs", final_programs, True)
+
+            try:
+                await dm_channel.send(embed=embed)
+            except:
+                return True
+
+            return True
     return False
