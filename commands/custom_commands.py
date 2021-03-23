@@ -2,7 +2,6 @@ import discord
 import shlex
 from methods.embed import create_embed, add_field
 from methods.database import database_connection
-import yaml
 
 # TODO: Fix the happyboi fix, by using None instead of NULL
 
@@ -78,7 +77,7 @@ async def create_command(ctx, client):
     #             if type(c) == str:
     #                 command_list.append(c)
 
-    command_list += [
+    command_list = [
         i[0][1::]
         for i in db["db"].execute("SELECT command FROM custom_commands").fetchall()
     ]

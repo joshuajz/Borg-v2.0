@@ -3,7 +3,6 @@ import os
 import traceback
 from commands import *
 from methods.database import create_filesystem, database_connection
-import yaml
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,6 +15,9 @@ intents.reactions = True
 # TODO: Potentially change programs commands, and cange the commands in general so they're more consistant
 
 # TODO: Setup a bot channel where all messages are deleted after being sent (after a timeout)
+
+# TODO: Add some sort of class system to store each server's DB and potentially other info so you don't have to call the DB everytime
+# TODO: Start using the new find_user function in methods.user.py
 
 # Commmands
 command_list = {
@@ -31,18 +33,15 @@ command_list = {
     "programs_add": programs_add,
     "programs": programs,
     "programs_remove": programs_remove,
-    # TEMPPPPP
     "welcome_setup": welcome_setup,
     "welcome_toggle": welcome_toggle,
     "warn": warn,
     "userinfo": userinfo,
+    "programs_edit": programs_edit,
 }
 
 # Bot Instance
 client = discord.Client(intents=intents)
-
-# All of the "Extensions" or "Cogs" the bot starts with
-startup_extensions = []
 
 
 @client.event
@@ -82,7 +81,6 @@ async def on_message(ctx):
 
 @client.event
 async def on_raw_reaction_add(ctx):
-
     if ctx.member.bot:
         return
 

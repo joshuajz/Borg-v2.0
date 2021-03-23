@@ -2,7 +2,6 @@ import sqlite3
 import os
 from shutil import copyfile
 import discord
-import yaml
 
 SERVERS_DIR = f"{os.getcwd()}/servers"
 DEFAULT_DIR = os.getcwd()
