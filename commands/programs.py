@@ -57,12 +57,11 @@ async def programs_add(ctx, client):
 
     programs_channel = int(programs_channel)
 
-    content = "".join(list(ctx.content)[14::])
+    content = ctx.content[14::]
 
-    # Finding the user_id to use
-    user_id = find_user(content.split(" ")[0])
+    user_id = find_user(content.strip().split(" ")[0])
     if user_id:
-        content = "".join(content.split(" ")[1::])
+        content = " ".join(content.strip().split(" ")[1::])
         if ctx.author.guild_permissions.administrator != True:
             user_id = ctx.author.id
     else:
@@ -72,17 +71,12 @@ async def programs_add(ctx, client):
 
     if "\n" in content:
         for program in content.split("\n"):
-            add_programs.append(program.strip())
-        temp_list = []
-        if "," in "".join(add_programs):
-            for program in add_programs:
-                if "," in program:
-                    for p in program.split(","):
-                        temp_list.append(p)
-                else:
-                    temp_list.append(program)
+            if "," in program:
+                for p in program.split(","):
+                    add_programs.append(p)
 
-        add_programs = temp_list
+                continue
+            add_programs.append(program)
     else:
         for program in content.split(","):
             add_programs.append(program.strip())
@@ -123,7 +117,7 @@ async def programs_add(ctx, client):
     )
 
     add_field(embed, "User", client.get_user(int(user_id)).mention, True)
-    add_field(embed, "Added Programs", f"```{plist}```", True)
+    add_field(embed, "Added Programs", f"```\n{plist}\n```", True)
     await ctx.channel.send(embed=embed)
 
 
