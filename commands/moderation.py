@@ -84,3 +84,18 @@ async def userinfo(ctx, client):
 
 async def infractions(ctx, client):
     print("temp")
+
+
+async def purge(ctx, client):
+    if ctx.author.guild_permissions.administrator != True:
+        return 
+    
+    try:
+        purge_amount = int(ctx.content.split(" ")[1])
+
+        yes = lambda x : True
+        deleted_amount = len(await ctx.channel.purge_(limit=purge_amount, check=yes, bulk=true))
+
+        await ctx.channel.send("Purged " + str(deleted_amount) + " messages")
+    except:
+        await ctx.channel.send("An error occured, messages not deleted") 
