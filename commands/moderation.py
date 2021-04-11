@@ -2,6 +2,7 @@ import discord
 import shlex
 from methods.embed import create_embed, add_field
 from methods.database import database_connection
+from functools import reduce
 import datetime
 
 
@@ -88,7 +89,41 @@ async def infractions(ctx, client):
 
 async def purge(ctx, client):
     if ctx.author.guild_permissions.administrator != True:
-        return 
+        return
+    
+    if ctx.content.split(" ")[1].lower() == "photo":
+        yes = lambda x : True in map(lambda y : y.content_type == "image", x.attachments)
+
+        try:
+            purge_amount = int(ctx.content.split(" ")[2])
+            deleted_amount = len(await ctx.channel.purge_(limit=purge_amount, check=yes, bulk=true))
+
+            await ctx.channel.send("Purged " + str(deleted_amount) + " photos") 
+        except:
+            try:
+                deleted_amount = len(await ctx.channel.purge_(limit=pow(2,63), check=yes, bulk=true))
+                await ctx.channel.send("Purged " + str(deleted_amount) + " photos")
+            except:
+                await ctx.channel.send("Error, unsuccessful purge")
+        return
+    
+    if ctx.content.split(" ")[1].lower() == "stalin":
+        try:
+            users = map(lambda x : x.id, ctx.mentions)
+            yes = lambda x : x.author.id in users
+
+            for i in range(len(users)):
+                purge_amount = int(ctx.content.split(" ")[2])
+                deleted_amount = len(await ctx.channel.purge_(limit=purge_amount, check=yes, bulk=true))
+
+                await ctx.channel.send("Purged " + str(deleted_amount) + " photos") 
+        except:
+            try:
+                deleted_amount = len(await ctx.channel.purge_(limit=pow(2,63), check=yes, bulk=true))
+                await ctx.channel.send("Purged " + str(deleted_amount) + " photos")  
+            except:
+                await ctx.channel.send("Error, unsuccessful purge")
+        return
     
     try:
         purge_amount = int(ctx.content.split(" ")[1])
@@ -98,4 +133,5 @@ async def purge(ctx, client):
 
         await ctx.channel.send("Purged " + str(deleted_amount) + " messages")
     except:
-        await ctx.channel.send("An error occured, messages not deleted") 
+        await ctx.channel.send("Error, unsuccessful purge or incorrect arguments") 
+
