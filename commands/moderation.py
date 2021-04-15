@@ -96,31 +96,31 @@ async def purge(ctx, client):
 
         try:
             purge_amount = int(ctx.content.split(" ")[2])
-            deleted_amount = len(await ctx.channel.purge_(limit=purge_amount, check=yes, bulk=true))
+            deleted_amount = len(await ctx.channel.purge(limit=purge_amount, check=yes, bulk=True))
 
-            await ctx.channel.send("Purged " + str(deleted_amount) + " photos") 
+            await ctx.channel.send("Purged " + str(deleted_amount) + " photo(s)") 
         except:
             try:
-                deleted_amount = len(await ctx.channel.purge_(limit=pow(2,63), check=yes, bulk=true))
-                await ctx.channel.send("Purged " + str(deleted_amount) + " photos")
+                deleted_amount = len(await ctx.channel.purge(limit=pow(2,63), check=yes, bulk=True))
+                await ctx.channel.send("Purged " + str(deleted_amount) + " photo(s)")
             except:
                 await ctx.channel.send("Error, unsuccessful purge")
         return
     
-    if ctx.content.split(" ")[1].lower() == "stalin":
+    if ctx.content.split(" ")[1].lower() == "user":
         try:
             users = map(lambda x : x.id, ctx.mentions)
             yes = lambda x : x.author.id in users
 
             for i in range(len(users)):
                 purge_amount = int(ctx.content.split(" ")[2])
-                deleted_amount = len(await ctx.channel.purge_(limit=purge_amount, check=yes, bulk=true))
+                deleted_amount = len(await ctx.channel.purge(limit=purge_amount, check=yes, bulk=True))
 
-                await ctx.channel.send("Purged " + str(deleted_amount) + " photos") 
+                await ctx.channel.send("Purged " + str(deleted_amount) + " messages(s)") 
         except:
             try:
-                deleted_amount = len(await ctx.channel.purge_(limit=pow(2,63), check=yes, bulk=true))
-                await ctx.channel.send("Purged " + str(deleted_amount) + " photos")  
+                deleted_amount = len(await ctx.channel.purge(limit=pow(2,63), check=yes, bulk=True))
+                await ctx.channel.send("Purged " + str(deleted_amount) + " messages(s)")  
             except:
                 await ctx.channel.send("Error, unsuccessful purge")
         return
@@ -129,9 +129,9 @@ async def purge(ctx, client):
         purge_amount = int(ctx.content.split(" ")[1])
 
         yes = lambda x : True
-        deleted_amount = len(await ctx.channel.purge_(limit=purge_amount, check=yes, bulk=true))
+        deleted_amount = len(await ctx.channel.purge(limit=purge_amount, check=yes, bulk=True))
 
-        await ctx.channel.send("Purged " + str(deleted_amount) + " messages")
+        await ctx.channel.send("Purged " + str(deleted_amount) + " message(s)")
     except:
         await ctx.channel.send("Error, unsuccessful purge or incorrect arguments") 
 
