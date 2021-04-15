@@ -87,54 +87,6 @@ async def infractions(ctx, client):
     print("temp")
 
 
-async def oldpurge(ctx, client):
-    if ctx.author.guild_permissions.administrator != True:
-        return
-    
-    if ctx.content.split(" ")[1].lower() == "photo":
-        yes = lambda x : True in tuple(map(lambda y : y.content_type.split("/")[0] == "image", x.attachments))
-
-        try:
-            purge_amount = int(ctx.content.split(" ")[2])
-            deleted_amount = len(await ctx.channel.purge(limit=purge_amount, check=yes, bulk=True))
-
-            await ctx.channel.send("Purged " + str(deleted_amount) + " photo(s)") 
-        except:
-            try:
-                deleted_amount = len(await ctx.channel.purge(limit=pow(2,63)-1, check=yes, bulk=True))
-                await ctx.channel.send("Purged " + str(deleted_amount) + " photo(s)")
-            except:
-                await ctx.channel.send("Error, unsuccessful purge")
-        return
-    
-    if ctx.content.split(" ")[1].lower() == "user":
-        try:
-            users = tuple(map(lambda x : x.id, ctx.mentions))
-            yes = lambda x : x.author.id in users
-
-            for i in range(len(users)):
-                purge_amount = int(ctx.content.split(" ")[2])
-                deleted_amount = len(await ctx.channel.purge(limit=purge_amount, check=yes, bulk=True))
-
-                await ctx.channel.send("Purged " + str(deleted_amount) + " messages(s)") 
-        except:
-            try:
-                deleted_amount = len(await ctx.channel.purge(limit=pow(2,63)-1, check=yes, bulk=True))
-                await ctx.channel.send("Purged " + str(deleted_amount) + " messages(s)")  
-            except:
-                await ctx.channel.send("Error, unsuccessful purge")
-        return
-    
-    try:
-        purge_amount = int(ctx.content.split(" ")[1])
-
-        yes = lambda x : True
-        deleted_amount = len(await ctx.channel.purge(limit=purge_amount, check=yes, bulk=True))
-
-        await ctx.channel.send("Purged " + str(deleted_amount) + " message(s)")
-    except:
-        await ctx.channel.send("Error, unsuccessful purge or incorrect arguments") 
-
 async def purge(ctx, client):
     if ctx.author.guild_permissions.administrator != True:
         return
@@ -149,22 +101,23 @@ async def purge(ctx, client):
 
     for i in range(amount_of_args):
         if args[i+1].lower() == "photo":
-            removepics = lambda x : True in tuple(map(lambda y : y.content_type.split("/")[0] == "image", x.attachments))
+            removepics = lambda x : True in tuple(map(lambda y : str(y.content_type).split("/")[0] == "image", x.attachments))
             check_functions.append(removepics)
             break
     
     users = tuple(map(lambda x : x.id, ctx.mentions))
-    removeusers = lambda x : x.author.id in users
-    check_functions.append(removeusers)
-
-    finalcheck = lambda x : reduce(lambda iter, cum : cum or iter(x), check_functions, False)
-    purge_amount = pow(2,63)-1 if args[amount_of_args].lower() == "all" else int(args[amount_of_args])
-
+    
+    if len(users) > 0:
+        removeusers = lambda x : x.author.id in users
+        check_functions.append(removeusers)
+    
     try:
+        finalcheck = lambda x : reduce(lambda cum, iter : cum and iter(x), check_functions, True)
+        purge_amount = pow(2,63)-1 if args[amount_of_args].lower() == "all" else int(args[amount_of_args])
+        
         deleted_amount = len(await ctx.channel.purge(limit=purge_amount, check=finalcheck, bulk=True))
         await ctx.channel.send("Purged " + str(deleted_amount) + " message(s)")
     except:
-        await ctx.channel.send("An error occured, message(s) not purged")
+        await ctx.channel.send("Error: messages not purged") 
     
     return
-
