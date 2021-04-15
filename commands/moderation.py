@@ -140,7 +140,7 @@ async def purge(ctx, client):
         return
     
     args = ctx.content.split(" ")
-    amount_of_args = len(ctx.content.split(" ")) - 2
+    amount_of_args = len(ctx.content.split(" ")) - 1
 
     if amount_of_args < 0:
        await ctx.channel.send("Error, incorrect arguments")
@@ -148,7 +148,7 @@ async def purge(ctx, client):
     check_functions = []
 
     for i in range(amount_of_args):
-        if args[i+1].tolower() == "photo":
+        if args[i+1].lower() == "photo":
             removepics = lambda x : True in tuple(map(lambda y : y.content_type.split("/")[0] == "image", x.attachments))
             check_functions.append(removepics)
             break
@@ -157,8 +157,8 @@ async def purge(ctx, client):
     removeusers = lambda x : x.author.id in users
     check_functions.append(removeusers)
 
-    finalcheck = lambda x : reduce(lambda init, cum : cum or init(x), check_functions, False)
-    purge_amount = pow(2,63)-1 if args[amount_of_args-1].tolower() == "all" else int(args[amount_of_args-1])
+    finalcheck = lambda x : reduce(lambda iter, cum : cum or iter(x), check_functions, False)
+    purge_amount = pow(2,63)-1 if args[amount_of_args].lower() == "all" else int(args[amount_of_args])
 
     try:
         deleted_amount = len(await ctx.channel.purge(limit=purge_amount, check=finalcheck, bulk=True))
