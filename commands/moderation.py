@@ -99,12 +99,13 @@ async def purge(ctx, client):
     
     check_functions = []
 
+    # Checks for photo purge
     for i in range(amount_of_args):
         if args[i+1].lower() == "photo":
-            removepics = lambda x : True in tuple(map(lambda y : str(y.content_type).split("/")[0] == "image", x.attachments))
-            check_functions.append(removepics)
+            check_functions.append(hasPhoto)
             break
     
+    # Checks for user purge
     users = tuple(map(lambda x : x.id, ctx.mentions))
     
     if len(users) > 0:
@@ -117,7 +118,29 @@ async def purge(ctx, client):
         
         deleted_amount = len(await ctx.channel.purge(limit=purge_amount, check=finalcheck, bulk=True))
         await ctx.channel.send("Purged " + str(deleted_amount) + " message(s)")
-    except:
-        await ctx.channel.send("Error: messages not purged") 
+    except Exception as e:
+        await ctx.channel.send("Error: messages not purged")
+        print(e)
     
     return
+
+def hasPhoto(msg):
+    # Looks for attached photos
+    has_photo = True in tuple(map(lambda y : str(y.content_type).split("/")[0] == "image", msg.attachments))
+
+    # Looks for linked photos
+    msg_parts = tuple(map(lambda x: x.lower(), msg.content.split(" ")))
+    photo_indicators = ("tenor", "jpeg", "jpg", "png", "gif", "webp", "giphy", "tiff", "nef", "cr2", "arw")
+
+    for i in range(len(msg_parts)):
+        if has_photo:
+            break
+        if msg_parts[i][0:4] != 'http':
+            continue
+        for h in range(len(photo_indicators)):
+            if photo_indicators[h] in msg_parts[i]:
+                has_photo = True
+                break
+    
+    return has_photo
+
