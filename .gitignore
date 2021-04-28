@@ -1,0 +1,7 @@
+**/._*
+**/.vscode
+**/.DS_Store
+**/__pycache__
+**/**.pyc
+**/.env
+**/servers

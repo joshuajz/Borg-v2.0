@@ -11,12 +11,13 @@ def _import_modules():
             module = ".".join([__name__, file_name])
             try:
                 imported = __import__(module, _globals, _locals, [file_name])
+                for name in imported.__dict__:
+                    if not name.startswith("_"):
+                        _globals[name] = imported.__dict__[name]
+                        __all__.append(name)
             except:
                 print("Error!")
-            for name in imported.__dict__:
-                if not name.startswith("_"):
-                    _globals[name] = imported.__dict__[name]
-                    __all__.append(name)
+            
 
     # print(__all__)
 

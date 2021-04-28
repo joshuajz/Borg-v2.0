@@ -2,6 +2,7 @@ import discord
 import shlex
 from methods.embed import create_embed, add_field
 from methods.database import database_connection
+from functools import reduce
 import datetime
 
 
@@ -84,3 +85,62 @@ async def userinfo(ctx, client):
 
 async def infractions(ctx, client):
     print("temp")
+
+
+async def purge(ctx, client):
+    if ctx.author.guild_permissions.administrator != True:
+        return
+    
+    args = ctx.content.split(" ")
+    amount_of_args = len(ctx.content.split(" ")) - 1
+
+    if amount_of_args < 0:
+       await ctx.channel.send("Error, incorrect arguments")
+    
+    check_functions = []
+
+    # Checks for photo purge
+    for i in range(amount_of_args):
+        if args[i+1].lower() == "photo":
+            check_functions.append(hasPhoto)
+            break
+    
+    # Checks for user purge
+    users = tuple(map(lambda x : x.id, ctx.mentions))
+    
+    if len(users) > 0:
+        removeusers = lambda x : x.author.id in users
+        check_functions.append(removeusers)
+    
+    try:
+        finalcheck = lambda x : reduce(lambda cum, iter : cum and iter(x), check_functions, True)
+        purge_amount = pow(2,63)-1 if args[amount_of_args].lower() == "all" else int(args[amount_of_args])
+        
+        deleted_amount = len(await ctx.channel.purge(limit=purge_amount, check=finalcheck, bulk=True))
+        await ctx.channel.send("Purged " + str(deleted_amount) + " message(s)")
+    except Exception as e:
+        await ctx.channel.send("Error: messages not purged")
+        print(e)
+    
+    return
+
+def hasPhoto(msg):
+    # Looks for attached photos
+    has_photo = True in tuple(map(lambda y : str(y.content_type).split("/")[0] == "image", msg.attachments))
+
+    # Looks for linked photos
+    msg_parts = tuple(map(lambda x: x.lower(), msg.content.split(" ")))
+    photo_indicators = ("tenor", "jpeg", "jpg", "png", "gif", "webp", "giphy", "tiff", "nef", "cr2", "arw")
+
+    for i in range(len(msg_parts)):
+        if has_photo:
+            break
+        if msg_parts[i][0:4] != 'http':
+            continue
+        for h in range(len(photo_indicators)):
+            if photo_indicators[h] in msg_parts[i]:
+                has_photo = True
+                break
+    
+    return has_photo
+

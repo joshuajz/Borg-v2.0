@@ -39,6 +39,7 @@ command_list = {
     "userinfo": userinfo,
     "programs_edit": programs_edit,
     "stress": stress,
+    "purge": purge
 }
 
 # Bot Instance

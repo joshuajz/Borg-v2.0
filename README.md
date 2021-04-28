@@ -18,7 +18,7 @@ git clone https://github.com/joshuajz/BorgV2
 3. Open the cloned repository
 4. Install the prerequisites using pip: (ie. run the following in the cloned folder)
 ```sh
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 **Discord Application Creation**
 1. Create a test discord server (ie. press the + in discord).
