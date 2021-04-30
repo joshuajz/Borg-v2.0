@@ -56,6 +56,12 @@ async def create_command(ctx, client):
         return
 
     command = content[1]
+
+    # Automatically adds '!' to the command name if it does not start with '!'
+    # a command name not starting with '!' will cause unexpected behaviour when calling and deleting
+    if command[0] != '!':
+        command = '!' + command
+
     if command[0] == '"' and command[-1] == '"':
         command = command[1:-1]
 
